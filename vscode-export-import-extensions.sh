@@ -9,34 +9,32 @@ installedExtensionsToFileFunction() {
 }
 
 helpFunction() {
-    echo "Usage: $0 [-o <export|import>]
+    echo "Usage: $0 [-o <export|import>] [-p <arg...>]
 
-Arguments:
-    export - Exports list of installed Visual Studio Code extensions to a plain text file.
-    import - Imports list of Visual Studio Code extensions from plain text file and adds the ones not installed yet."
+-o  Operation to perform, can either be export or import:
+        export - Exports list of installed Visual Studio Code extensions to a plain text file.
+        import - Imports list of Visual Studio Code extensions from plain text file and adds the ones not installed yet.
+
+-p  Relative filepath, file shouldn't exist for export operation and should exist, be readable and not empty for import operation."
 
     exit 1
 }
 
 exportFunction() {
-    read -p "Specify filename for Visual Studio Code extensions list (without extension): " name
-
-    if [ -z "$name" ]; then
-        echo "Empty filename provided." && exit 1
+    if [ -z "$1" ]; then
+        echo "Empty filepath provided." && helpFunction
     else
-        installedExtensionsToFileFunction "$name.txt"
+        installedExtensionsToFileFunction "$1"
     fi
 }
 
 importFunction() {
-    read -p "Specify path to file with Visual Studio Code extensions list to install: " expected
-
-    if [ -f "$expected" ] && [ -r "$expected" ] && [ -s "$expected" ]; then
-        local actual=$(uuidgen).txt
+    if [ -f "$1" ] && [ -r "$1" ] && [ -s "$1" ]; then
+        local actual=$(uuidgen)
         installedExtensionsToFileFunction "$actual"
 
         # Comparing extensions lists and returning the lines absent in actual list
-        local toInstall=$(grep -Fxvf "$actual" "$expected")
+        local toInstall=$(grep -Fxvf "$actual" "$1")
 
         for ext in "$toInstall"; do
             code --install-extension "$ext"
@@ -44,23 +42,24 @@ importFunction() {
 
         rm "$actual" && echo "$actual file successfully deleted." || ( echo "Can't delete $actual file." && exit 1 )
     else
-        echo "File not exists, not readable or is empty." && exit 1
+        echo "File not exists, not readable or is empty." && helpFunction
     fi
 }
 
-while getopts "o:" opt; do
+while getopts "o:p:" opt; do
     case "$opt" in
-        o ) arg="$OPTARG";;
+        o ) operation="$OPTARG";;
+        p ) path="$OPTARG";;
         ? ) helpFunction;;
     esac
 done
 
-if [ -z "$arg" ]; then
+if [ -z "$operation" ]; then
     helpFunction
-elif [ "$arg" = "export" ]; then
-    exportFunction
-elif [ "$arg" = "import" ]; then
-    importFunction
+elif [ "$operation" = "export" ]; then
+    exportFunction "$path"
+elif [ "$operation" = "import" ]; then
+    importFunction "$path"
 else
-    echo "Invalid argument." && helpFunction
+    echo "Invalid operation." && helpFunction
 fi

@@ -7,8 +7,10 @@ It uses only extensions names and ignores versions during operations. It is reco
 ## Use
 
     $ ./vscode-export-import-extensions.sh
-    Usage: ./vscode-export-import-extensions.sh [-o <export|import>]
+    Usage: ./vscode-export-import-extensions.sh [-o <export|import>] [-p <arg...>]
 
-    Arguments:
-        export - Exports list of installed Visual Studio Code extensions to a plain text file.
-        import - Imports list of Visual Studio Code extensions from plain text file and adds the ones not installed yet.
+    -o  Operation to perform, can either be export or import:
+            export - Exports list of installed Visual Studio Code extensions to a plain text file.
+            import - Imports list of Visual Studio Code extensions from plain text file and adds the ones not installed yet.
+
+    -p  Relative filepath, file shouldn't exist for export operation and should exist, be readable and not empty for import operation.
