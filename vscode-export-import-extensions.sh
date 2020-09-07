@@ -4,7 +4,7 @@ installedExtensionsToFileFunction() {
     if [ -f "$1" ]; then
         echo "File $1 already exists." && exit 1
     else
-        code --list-extensions | sort | uniq -i > "$1" && echo "Extensions list successfully exported to $1." || ( echo "Error occurred during export operation." && exit 1 )
+        (code --list-extensions | sort | uniq -i >"$1" && echo "Extensions list successfully exported to $1.") || (echo "Error occurred during export operation to $1." && exit 1)
     fi
 }
 
@@ -30,17 +30,19 @@ exportFunction() {
 
 importFunction() {
     if [ -f "$1" ] && [ -r "$1" ] && [ -s "$1" ]; then
-        local actual=$(uuidgen)
+        local actual
+        actual=$(uuidgen)
         installedExtensionsToFileFunction "$actual"
 
         # Comparing extensions lists and returning the lines absent in actual list
-        local toInstall=$(grep -Fxvf "$actual" "$1")
+        local toInstall
+        toInstall=$(grep -Fxvf "$actual" "$1")
 
         for ext in "$toInstall"; do
             code --install-extension "$ext"
         done
 
-        rm "$actual" && echo "$actual file successfully deleted." || ( echo "Can't delete $actual file." && exit 1 )
+        (rm "$actual" && echo "$actual file successfully deleted.") || (echo "Error occurred during delete operation of $actual file." && exit 1)
     else
         echo "File not exists, not readable or is empty." && helpFunction
     fi
@@ -48,9 +50,9 @@ importFunction() {
 
 while getopts "o:p:" opt; do
     case "$opt" in
-        o ) operation="$OPTARG";;
-        p ) path="$OPTARG";;
-        ? ) helpFunction;;
+    o) operation="$OPTARG" ;;
+    p) path="$OPTARG" ;;
+    ?) helpFunction ;;
     esac
 done
 
