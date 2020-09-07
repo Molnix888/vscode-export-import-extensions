@@ -38,7 +38,7 @@ importFunction() {
         local toInstall
         toInstall=$(grep -Fxvf "$actual" "$1")
 
-        for ext in "$toInstall"; do
+        for ext in $toInstall; do
             code --install-extension "$ext"
         done
 
