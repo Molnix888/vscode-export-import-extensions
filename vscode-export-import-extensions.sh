@@ -1,14 +1,6 @@
 #!/bin/bash
 
-installedExtensionsToFileFunction() {
-    if [ -f "$1" ]; then
-        echo "File $1 already exists." && exit 1
-    else
-        (code --list-extensions | sort | uniq -i >"$1" && echo "Extensions list successfully exported to $1.") || (echo "Error occurred during export operation to $1." && exit 1)
-    fi
-}
-
-helpFunction() {
+get_help() {
     echo "Usage: $0 [-o <export|import>] [-p <arg...>]
 
 -o  Operation to perform, can either be export or import:
@@ -20,31 +12,39 @@ helpFunction() {
     exit 1
 }
 
-exportFunction() {
-    if [ -z "$1" ]; then
-        echo "Empty filepath provided." && helpFunction
+extensions_list_to_file() {
+    if [ -f "$1" ]; then
+        echo "File $1 already exists." && get_help
     else
-        installedExtensionsToFileFunction "$1"
+        (code --list-extensions | sort | uniq -i >"$1" && echo "Extensions list successfully exported to $1.") || (echo "Error occurred during export operation to $1." && exit 1)
     fi
 }
 
-importFunction() {
+export_extensions() {
+    if [ -z "$1" ]; then
+        echo "Empty filepath provided." && get_help
+    else
+        extensions_list_to_file "$1"
+    fi
+}
+
+import_extensions() {
     if [ -f "$1" ] && [ -r "$1" ] && [ -s "$1" ]; then
         local actual
         actual=$(uuidgen)
-        installedExtensionsToFileFunction "$actual"
+        extensions_list_to_file "$actual"
 
         # Comparing extensions lists and returning the lines absent in actual list
-        local toInstall
-        toInstall=$(grep -Fxvf "$actual" "$1")
+        local to_install
+        to_install=$(grep -Fxvf "$actual" "$1")
 
-        for ext in $toInstall; do
+        for ext in $to_install; do
             code --install-extension "$ext"
         done
 
         (rm "$actual" && echo "$actual file successfully deleted.") || (echo "Error occurred during delete operation of $actual file." && exit 1)
     else
-        echo "File not exists, not readable or is empty." && helpFunction
+        echo "File not exists, not readable or is empty." && get_help
     fi
 }
 
@@ -52,16 +52,16 @@ while getopts "o:p:" opt; do
     case "$opt" in
     o) operation="$OPTARG" ;;
     p) path="$OPTARG" ;;
-    ?) helpFunction ;;
+    ?) get_help ;;
     esac
 done
 
 if [ -z "$operation" ]; then
-    helpFunction
+    get_help
 elif [ "$operation" = "export" ]; then
-    exportFunction "$path"
+    export_extensions "$path"
 elif [ "$operation" = "import" ]; then
-    importFunction "$path"
+    import_extensions "$path"
 else
-    echo "Invalid operation." && helpFunction
+    echo "Invalid operation." && get_help
 fi
