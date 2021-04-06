@@ -1,10 +1,10 @@
 # vscode-export-import-extensions
 
-![CI](https://github.com/Molnix888/vscode-export-import-extensions/workflows/CI/badge.svg) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/657700062c4b41f0a815e186e69c078e)](https://www.codacy.com/gh/Molnix888/vscode-export-import-extensions)
+A script created to ease a process of restoring a set of Visual Studio Code
+extensions after system re-installation or for moving it to another instance.
 
-A script created to ease a process of restoring a set of Visual Studio Code extensions after system re-installation or for moving it to another instance.
-
-It uses only extensions names and ignores versions during operations. It is recommended for import operation to use only files exported via this script.
+Uses extensions names and ignores versions during operations.
+For import operation recommended to use files exported via this script.
 
 ## Use
 
